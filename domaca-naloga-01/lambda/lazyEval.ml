@@ -5,44 +5,44 @@ let rec eval_exp = function
   | S.Var x -> failwith "Expected a closed term"
   | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ as e -> e
   | S.Plus (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Int (n1 + n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Int (n1 + n2)
   | S.Minus (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Int (n1 - n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Int (n1 - n2)
   | S.Times (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Int (n1 * n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Int (n1 * n2)
   | S.Equal (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Bool (n1 = n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Bool (n1 = n2)
   | S.Less (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Bool (n1 < n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Bool (n1 < n2)
   | S.Greater (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Bool (n1 > n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Bool (n1 > n2)
   | S.IfThenElse (e, e1, e2) ->
-      begin match eval_exp e with
+    begin match eval_exp e with
       | S.Bool true -> eval_exp e1
       | S.Bool false -> eval_exp e2
       | _ -> failwith "Boolean expected"
-      end
+    end
   | S.Apply (e1, e2) ->
-      let f = eval_exp e1
-      and v = eval_exp e2
-      in
-      begin match f with
+    let f = eval_exp e1
+    and v = eval_exp e2
+    in
+    begin match f with
       | S.Lambda (x, e) -> eval_exp (S.subst [(x, v)] e)
       | S.RecLambda (f, x, e) as rec_f -> eval_exp (S.subst [(f, rec_f); (x, v)] e)
       | _ -> failwith "Function expected"
-      end
+    end
 and eval_int e =
   match eval_exp e with
   | S.Int n -> n
@@ -88,4 +88,4 @@ let rec small_step e =
   print_endline (S.string_of_exp e);
   if not (is_value e) then
     (print_endline "  ~>";
-    small_step (step e))
+     small_step (step e))
