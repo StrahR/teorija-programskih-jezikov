@@ -5,56 +5,88 @@ let rec eval_exp = function
   | S.Var x -> failwith "Expected a closed term"
   | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ as e -> e
   | S.Plus (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Int (n1 + n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Int (n1 + n2)
   | S.Minus (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Int (n1 - n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Int (n1 - n2)
   | S.Times (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Int (n1 * n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Int (n1 * n2)
   | S.Equal (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Bool (n1 = n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Bool (n1 = n2)
   | S.Less (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Bool (n1 < n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Bool (n1 < n2)
   | S.Greater (e1, e2) ->
-      let n1 = eval_int e1
-      and n2 = eval_int e2
-      in S.Bool (n1 > n2)
+    let n1 = eval_int e1
+    and n2 = eval_int e2
+    in S.Bool (n1 > n2)
   | S.IfThenElse (e, e1, e2) ->
-      begin match eval_exp e with
+    begin match eval_exp e with
       | S.Bool true -> eval_exp e1
       | S.Bool false -> eval_exp e2
       | _ -> failwith "Boolean expected"
-      end
+    end
   | S.Apply (e1, e2) ->
-      let f = eval_exp e1
-      and v = eval_exp e2
-      in
-      begin match f with
+    let f = eval_exp e1
+    and v = eval_exp e2
+    in
+    begin match f with
       | S.Lambda (x, e) -> eval_exp (S.subst [(x, v)] e)
       | S.RecLambda (f, x, e) as rec_f -> eval_exp (S.subst [(f, rec_f); (x, v)] e)
       | _ -> failwith "Function expected"
-      end
-and eval_int e =
+    end
+  | S.Nil -> S.Nil
+  | S.Pair (e1, e2) -> S.Pair (eval_exp e1, eval_exp e2)
+  | S.Fst e ->
+    begin match eval_exp e with
+      | S.Pair (e1, e2) -> eval_exp e1
+      | _ -> failwith "Pair expected"
+    end
+  | S.Snd e ->
+    begin match eval_exp e with
+      | S.Pair (e1, e2) -> eval_exp e2
+      | _ -> failwith "Pair expected"
+    end
+  | S.Cons (e, es) ->
+    let x = eval_exp e
+    and xs = eval_exp es
+    in begin match xs with
+      | S.Nil | S.Cons _ -> S.Cons (x, xs) 
+      | _ -> failwith "List expected"
+    end
+  | S.Match (e, e1, x, xs, e2) ->
+    begin match e with
+      | S.Nil -> eval_exp e1
+      | S.Cons (v, vs) -> eval_exp (S.subst [(x, v); (xs, vs)] (eval_exp e2))
+      | _ -> failwith "List expected"
+    end
+
+and eval_int e = 
   match eval_exp e with
   | S.Int n -> n
   | _ -> failwith "Integer expected"
 
-let is_value = function
-  | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ -> true
+let rec is_value = function
+  | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ 
+  | S.Nil -> true
+  | S.Pair (e1, e2) when is_value e1 && is_value e2 -> true
+  | S.Cons (e, es) when is_value e&& is_value es -> true
   | S.Var _ | S.Plus _ | S.Minus _ | S.Times _ | S.Equal _ | S.Less _ | S.Greater _
-  | S.IfThenElse _ | S.Apply _ -> false
+  | S.IfThenElse _ | S.Apply _ 
+  | S.Fst _ | S.Snd _ | S.Match _ | S.Pair _ | S.Cons _ -> false
 
 let rec step = function
-  | S.Var _ | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ -> failwith "Expected a non-terminal expression"
+  | S.Var _ | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Nil -> failwith "Expected a non-terminal expression"
+  | S.Pair (e1, e2) when is_value e1 && is_value e2 -> failwith "Expected a non-terminal expression"
+  | S.Cons (e, es) when is_value e&& is_value es -> failwith "Expected a non-terminal expression"
   | S.Plus (S.Int n1, S.Int n2) -> S.Int (n1 + n2)
   | S.Plus (S.Int n1, e2) -> S.Plus (S.Int n1, step e2)
   | S.Plus (e1, e2) -> S.Plus (step e1, e2)
@@ -79,6 +111,23 @@ let rec step = function
   | S.Apply (S.RecLambda (f, x, e) as rec_f, v) when is_value v -> S.subst [(f, rec_f); (x, v)] e
   | S.Apply ((S.Lambda _ | S.RecLambda _) as f, e) -> S.Apply (f, step e)
   | S.Apply (e1, e2) -> S.Apply (step e1, e2)
+  | S.Pair (S.Int n1, S.Int n2) -> S.Pair (S.Int n1, S.Int n2)
+  | S.Pair (S.Int n1, e2) -> S.Pair (S.Int n1, step e2)
+  | S.Pair (e1, e2) -> S.Pair (step e1, e2)
+  | S.Fst S.Pair (S.Int n1, S.Int n2) -> S.Int n1
+  | S.Fst S.Pair (S.Int n1, e2) -> S.Fst (S.Pair (S.Int n1, step e2))
+  | S.Fst S.Pair (e1, e2) -> S.Fst (S.Pair (step e1, e2))
+  | S.Fst _ -> failwith "Pair Expected"
+  | S.Snd S.Pair (S.Int n1, S.Int n2) -> S.Int n1
+  | S.Snd S.Pair (S.Int n1, e2) -> S.Snd (S.Pair (S.Int n1, step e2))
+  | S.Snd S.Pair (e1, e2) -> S.Snd (S.Pair (step e1, e2))
+  | S.Snd _ -> failwith "Pair Expected"
+  | S.Cons (S.Int n, S.Nil) -> S.Cons (S.Int n, S.Nil)
+  | S.Cons (S.Int n, xs) -> S.Cons (S.Int n, step xs)
+  | S.Cons (x, xs) -> S.Cons (step x, xs)
+  | S.Match (S.Nil, e1, x, xs, e2) -> e1
+  | S.Match (S.Cons (v, vs), e1, x, xs, e2) -> S.subst [(x, v); (xs, vs)] e2
+  | S.Match (e, e1, x, xs, e2) -> S.Match (step e, e1, x, xs, e2)
 
 let big_step e =
   let v = eval_exp e in
@@ -88,4 +137,4 @@ let rec small_step e =
   print_endline (S.string_of_exp e);
   if not (is_value e) then
     (print_endline "  ~>";
-    small_step (step e))
+     small_step (step e))

@@ -38,11 +38,8 @@ def reverse {A} : list A -> list A
 theorem join_asoc {A} (xs ys zs : list A) : (xs ++ ys) ++ zs = xs ++ (ys ++ zs) :=
 begin
   induction xs,
-  case Nil {unfold join},
-  case Cons {
-    unfold join,
-    rewrite xs_ih
-  }
+  all_goals {unfold join},
+  rewrite xs_ih,
 end
 
 

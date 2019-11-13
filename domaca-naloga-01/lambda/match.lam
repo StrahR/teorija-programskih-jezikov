@@ -1,0 +1,3 @@
+MATCH 1 :: [] WITH
+| [] -> FST {1, 2}
+| x :: xs -> SND {2, 3}
