@@ -40,7 +40,9 @@ let rec subst sbst = function
   | IfThenElse (e, e1, e2) -> IfThenElse (subst sbst e, subst sbst e1, subst sbst e2)
   | Lambda (x, e) ->
     let sbst' = List.remove_assoc x sbst in
-    Lambda (x, subst sbst' e)
+    let sbst'' = 
+      List.filter (function (_, Var nm) -> x <> nm | _ -> true) sbst' in 
+    Lambda (x, subst sbst'' e)
   | RecLambda (f, x, e) ->
     let sbst' = List.remove_assoc f (List.remove_assoc x sbst) in
     RecLambda (f, x, subst sbst' e)
@@ -51,9 +53,8 @@ let rec subst sbst = function
   | Snd e -> Snd (subst sbst e)
   | Cons (e, es) -> Cons (subst sbst e, subst sbst es)
   | Match (e, e1, x, xs, e2) -> 
-    let sbst' = List.remove_assoc x sbst in
-    let sbst'' = List.remove_assoc xs sbst' in
-    Match (subst sbst e, subst sbst e1, x, xs, subst sbst'' e2)
+    let sbst' = List.remove_assoc xs (List.remove_assoc x sbst) in
+    Match (subst sbst e, subst sbst e1, x, xs, subst sbst' e2)
 
 let rec string_of_exp3 = function
   | IfThenElse (e, e1, e2) ->
