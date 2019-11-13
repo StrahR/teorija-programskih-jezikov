@@ -84,9 +84,7 @@ let rec is_value = function
   | S.Fst _ | S.Snd _ | S.Match _ | S.Pair _ | S.Cons _ -> false
 
 let rec step = function
-  | S.Var _ | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Nil -> failwith "Expected a non-terminal expression"
-  | S.Pair (e1, e2) when is_value e1 && is_value e2 -> failwith "Expected a non-terminal expression"
-  | S.Cons (e, es) when is_value e&& is_value es -> failwith "Expected a non-terminal expression"
+  | S.Var _ | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ -> failwith "Expected a non-terminal expression"
   | S.Plus (S.Int n1, S.Int n2) -> S.Int (n1 + n2)
   | S.Plus (S.Int n1, e2) -> S.Plus (S.Int n1, step e2)
   | S.Plus (e1, e2) -> S.Plus (step e1, e2)
@@ -111,22 +109,25 @@ let rec step = function
   | S.Apply (S.RecLambda (f, x, e) as rec_f, v) when is_value v -> S.subst [(f, rec_f); (x, v)] e
   | S.Apply ((S.Lambda _ | S.RecLambda _) as f, e) -> S.Apply (f, step e)
   | S.Apply (e1, e2) -> S.Apply (step e1, e2)
-  | S.Pair (S.Int n1, S.Int n2) -> S.Pair (S.Int n1, S.Int n2)
-  | S.Pair (S.Int n1, e2) -> S.Pair (S.Int n1, step e2)
+  | S.Nil -> S.Nil
+  | S.Pair _ as p when is_value p -> p
+  | S.Pair (v1, e2) when is_value v1 -> S.Pair (v1, step e2)
   | S.Pair (e1, e2) -> S.Pair (step e1, e2)
-  | S.Fst S.Pair (S.Int n1, S.Int n2) -> S.Int n1
-  | S.Fst S.Pair (S.Int n1, e2) -> S.Fst (S.Pair (S.Int n1, step e2))
+  | S.Fst S.Pair (v1, v2) as e when is_value e -> v1
+  | S.Fst S.Pair (v1, e2) when is_value v1 -> S.Fst (S.Pair (v1, step e2))
   | S.Fst S.Pair (e1, e2) -> S.Fst (S.Pair (step e1, e2))
   | S.Fst _ -> failwith "Pair Expected"
-  | S.Snd S.Pair (S.Int n1, S.Int n2) -> S.Int n1
-  | S.Snd S.Pair (S.Int n1, e2) -> S.Snd (S.Pair (S.Int n1, step e2))
+  | S.Snd S.Pair (v1, v2) as e when is_value e -> v2
+  | S.Snd S.Pair (v1, e2) when is_value v1 -> S.Snd (S.Pair (v1, step e2))
   | S.Snd S.Pair (e1, e2) -> S.Snd (S.Pair (step e1, e2))
   | S.Snd _ -> failwith "Pair Expected"
-  | S.Cons (S.Int n, S.Nil) -> S.Cons (S.Int n, S.Nil)
-  | S.Cons (S.Int n, xs) -> S.Cons (S.Int n, step xs)
+  | S.Cons _ as l when is_value l -> l
+  | S.Cons (v, xs) when is_value v -> S.Cons (v, step xs)
   | S.Cons (x, xs) -> S.Cons (step x, xs)
   | S.Match (S.Nil, e1, x, xs, e2) -> e1
-  | S.Match (S.Cons (v, vs), e1, x, xs, e2) -> S.subst [(x, v); (xs, vs)] e2
+  | S.Match (S.Cons (v, vs) as e, e1, x, xs, e2) when is_value e ->
+    (S.subst [(x, v); (xs, vs)] e2)
+  | S.Match (e, e1, x, xs, e2) when is_value e -> failwith "List expected"
   | S.Match (e, e1, x, xs, e2) -> S.Match (step e, e1, x, xs, e2)
 
 let big_step e =

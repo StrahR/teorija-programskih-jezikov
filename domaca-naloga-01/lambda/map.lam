@@ -3,4 +3,4 @@ LET REC map f = FUN ll ->
     | [] -> []
     | x :: xs -> (f x) :: (map f xs)
 IN
-map (FUN x -> x+1) (1 :: 2 :: [])
+map (FUN a -> a+1) (1 :: 2 :: [])
