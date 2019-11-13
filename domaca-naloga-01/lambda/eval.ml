@@ -78,7 +78,7 @@ let rec is_value = function
   | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ 
   | S.Nil -> true
   | S.Pair (e1, e2) when is_value e1 && is_value e2 -> true
-  | S.Cons (e, es) when is_value e&& is_value es -> true
+  | S.Cons (e, es) when is_value e && is_value es -> true
   | S.Var _ | S.Plus _ | S.Minus _ | S.Times _ | S.Equal _ | S.Less _ | S.Greater _
   | S.IfThenElse _ | S.Apply _ 
   | S.Fst _ | S.Snd _ | S.Match _ | S.Pair _ | S.Cons _ -> false
