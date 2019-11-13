@@ -50,7 +50,10 @@ let rec subst sbst = function
   | Fst e -> Fst (subst sbst e)
   | Snd e -> Snd (subst sbst e)
   | Cons (e, es) -> Cons (subst sbst e, subst sbst es)
-  | Match (e, e1, x, xs, e2) -> Match (subst sbst e, subst sbst e1, x, xs, subst sbst e2)
+  | Match (e, e1, x, xs, e2) -> 
+    let sbst' = List.remove_assoc x sbst in
+    let sbst'' = List.remove_assoc xs sbst' in
+    Match (subst sbst e, subst sbst e1, x, xs, subst sbst'' e2)
 
 let rec string_of_exp3 = function
   | IfThenElse (e, e1, e2) ->

@@ -1,0 +1,7 @@
+LET REC split ll =
+    MATCH ll WITH
+    | [] -> {[], []}
+    | x :: xs ->
+        LET sxs = split xs
+        IN {FST x :: FST sxs, SND x :: SND sxs}
+IN split ({1, 1} :: {1, 2} :: {1, 3} :: [])

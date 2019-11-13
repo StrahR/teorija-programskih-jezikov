@@ -65,7 +65,7 @@ let rec eval_exp = function
   | S.Match (e, e1, x, xs, e2) ->
     begin match e with
       | S.Nil -> eval_exp e1
-      | S.Cons (v, vs) -> eval_exp (S.subst [(x, v); (xs, vs)] (eval_exp e2))
+      | S.Cons (v, vs) -> eval_exp (S.subst [(x, v); (xs, vs)] e2)
       | _ -> failwith "List expected"
     end
 
@@ -113,11 +113,11 @@ let rec step = function
   | S.Pair _ as p when is_value p -> p
   | S.Pair (v1, e2) when is_value v1 -> S.Pair (v1, step e2)
   | S.Pair (e1, e2) -> S.Pair (step e1, e2)
-  | S.Fst S.Pair (v1, v2) as e when is_value e -> v1
+  | S.Fst (S.Pair (v1, v2) as e) when is_value e -> v1
   | S.Fst S.Pair (v1, e2) when is_value v1 -> S.Fst (S.Pair (v1, step e2))
   | S.Fst S.Pair (e1, e2) -> S.Fst (S.Pair (step e1, e2))
   | S.Fst _ -> failwith "Pair Expected"
-  | S.Snd S.Pair (v1, v2) as e when is_value e -> v2
+  | S.Snd (S.Pair (v1, v2) as e) when is_value e -> v2
   | S.Snd S.Pair (v1, e2) when is_value v1 -> S.Snd (S.Pair (v1, step e2))
   | S.Snd S.Pair (e1, e2) -> S.Snd (S.Pair (step e1, e2))
   | S.Snd _ -> failwith "Pair Expected"
