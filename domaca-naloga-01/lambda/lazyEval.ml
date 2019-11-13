@@ -54,13 +54,7 @@ let rec eval_exp = function
       | S.Pair (e1, e2) -> eval_exp e2
       | _ -> S.Snd (eval_exp e)
     end
-  | S.Cons (e, es) -> 
-    let x = eval_exp e
-    and xs = eval_exp es
-    in begin match xs with
-      | S.Nil | S.Cons _ -> S.Cons (x, xs) 
-      | _ -> failwith "List expected"
-    end
+  | S.Cons (e, es) -> S.Cons (eval_exp e, eval_exp es)
   | S.Match (e, e1, x, xs, e2) ->
     begin match e with
       | S.Nil -> eval_exp e1
