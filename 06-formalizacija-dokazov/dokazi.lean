@@ -36,7 +36,7 @@ end
 
 #print or_comm''
 
-theorem or_comm'' : forall p q, p ∨ q -> q ∨ p := begin
+theorem or_comm''' : forall p q, p ∨ q -> q ∨ p := begin
   intros,
   cases a,
   case or.inl { apply or.inr, exact a },
@@ -44,13 +44,27 @@ theorem or_comm'' : forall p q, p ∨ q -> q ∨ p := begin
 end
 
 -- (P => Q) /\ P => Q
+theorem modus_ponens : forall p q, (p -> q) ∧ p -> q := begin
+  intros,
+end
 
 -- P /\ Q => Q /\ P
+theorem and_comm' : forall p q, p ∧ q -> q ∧ p := begin
+  intros,
+end
 
 -- (P \/ Q) /\ R => (P /\ R) \/ (Q /\ R)
-
+theorem dist : forall p q r, (p ∨ q) ∧ r -> (p ∧ r) ∨ (q ∧ r) := begin
+  intros,
+  cases a,
+  cases a_left,
+  {left, exact and.intro a_left a_right},
+  {right, exact and.intro a_left a_right},
+end
 -- (P /\ Q) \/ R => (P \/ R) /\ (Q \/ R)
-
+theorem dist' : forall p q r, (p ∧ q) ∨ r -> (p ∨ r) ∧ (q ∨ r) := begin
+  
+end
 -- (P => R) => (Q => R) <=> ((P \/ Q) => R)
 
 -- P \/ Q => P /\ Q
