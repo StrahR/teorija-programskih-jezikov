@@ -4,8 +4,6 @@ Naloga obsega dve razširitvi jezika Lambda, ki ste ga spoznali med predavanji.
 
 Za oddajo naloge si podvojite repozitorij (*fork*) na vaš uporabniški račun. Razširitve jezika in dodatne datoteke nato dodajte na vaš repozitorij (prav tako na vejo `domaca-naloga-01`), na spletni učilnici pa oddatje zgolj povezavo do vašega repozitorija.
 
-## IZGRADNJA JEZIKA LAMBDA
-
 Cilj domače naloge so izključno razširitve jezike, zato pri karkšnihkoli problemih z izgradnjo jezika Lambda pošljite e-mail, da problem čimprej rešimo.
 
 ### Linux & Mac
@@ -51,9 +49,9 @@ Vaša naloga je:
 1. V `syntax.ml` dopolnite substitucijo za nove konstrukte.
 2. Dopolnite evaluator `eval.ml` za nove konstrukte. Pomembno je, da pravilno deluje za smiselne programe (torej ne rabite skrbeti kaj se zgodi s programom `FST 1`).
 3. V datoteko `map.lam` napišite funkcijo `map` in jo uporabite na primeru.
-4. V datoteko `unzip.lam` napišite funkicjo `unzip` in jo uporabite na primeru.
+4. V datoteko `split.lam` napišite funkicjo `split` in jo uporabite na primeru.
 
-(opis funkcij `map` in `unzip` lahko poiščete v Ocaml Documentaciji https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html) 
+(opis funkcij `map` in `split` lahko poiščete v Ocaml Documentaciji https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html) 
 
 ## RAZŠIRITEV Z LENIM IZVAJANJEM
 
