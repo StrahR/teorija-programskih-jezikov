@@ -1,1 +1,0 @@
-((FUN x -> FUN y -> x) y) 3

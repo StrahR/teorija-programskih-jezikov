@@ -1,6 +1,0 @@
-LET REC map f = FUN ll ->
-    MATCH ll WITH
-    | [] -> []
-    | x :: xs -> f x :: map f xs
-IN
-map (FUN x -> x+1) (0 :: 1 :: 2 :: [])
