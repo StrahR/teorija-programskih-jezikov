@@ -1,6 +1,6 @@
-LET REC map f = FUN list -> (
-    MATCH list WITH
+LET REC map f = FUN ll ->
+    MATCH ll WITH
     | [] -> []
-    | x :: xs -> (f x) :: ((map f) xs)
-)
-IN ((map (FUN a -> a + 1)) (1::2::3::4::[]))
+    | x :: xs -> f x :: map f xs
+IN
+map (FUN x -> x+1) (0 :: 1 :: 2 :: [])

@@ -26,10 +26,10 @@ let let_rec_in (f, x, e1, e2) = let_in (f, RecLambda (f, x, e1), e2)
 
 let rec subst sbst = function
   | Var x as e ->
-      begin match List.assoc_opt x sbst with
+    begin match List.assoc_opt x sbst with
       | None -> e
       | Some e' -> e'
-      end
+    end
   | Int _ | Bool _ as e -> e
   | Plus (e1, e2) -> Plus (subst sbst e1, subst sbst e2)
   | Minus (e1, e2) -> Minus (subst sbst e1, subst sbst e2)
@@ -39,35 +39,32 @@ let rec subst sbst = function
   | Greater (e1, e2) -> Greater (subst sbst e1, subst sbst e2)
   | IfThenElse (e, e1, e2) -> IfThenElse (subst sbst e, subst sbst e1, subst sbst e2)
   | Lambda (x, e) ->
-      let sbst' = List.remove_assoc x sbst in
-      Lambda (x, subst sbst' e)
+    let sbst' = List.remove_assoc x sbst in
+    let sbst'' = 
+      List.filter (function (_, Var nm) -> x <> nm | _ -> true) sbst' in 
+    Lambda (x, subst sbst'' e)
   | RecLambda (f, x, e) ->
-      let sbst' = List.remove_assoc f (List.remove_assoc x sbst) in
-      RecLambda (f, x, subst sbst' e)
-  | Apply (e1, e2) -> Apply (subst sbst e1, subst sbst e2) (* mine onward*)
+    let sbst' = List.remove_assoc f (List.remove_assoc x sbst) in
+    RecLambda (f, x, subst sbst' e)
+  | Apply (e1, e2) -> Apply (subst sbst e1, subst sbst e2)
+  | Nil -> Nil
   | Pair (e1, e2) -> Pair (subst sbst e1, subst sbst e2)
   | Fst e -> Fst (subst sbst e)
-  | Snd e-> Snd (subst sbst e)
-  | Nil -> Nil
-  | Cons (e1, e2) -> Cons (subst sbst e1, subst sbst e2)
-  | Match (e, e1, x, xs, e2) ->
-    let sbst' = List.remove_assoc x sbst in
-    let sbst'' = List.remove_assoc xs sbst' in 
-    Match (subst sbst e, (* thing to match on *)
-           subst sbst e1, (* expression for empty list *)
-           x, (* head *)
-           xs, (* tail *)
-           subst sbst'' e2) (* expression for non-empty list *)
+  | Snd e -> Snd (subst sbst e)
+  | Cons (e, es) -> Cons (subst sbst e, subst sbst es)
+  | Match (e, e1, x, xs, e2) -> 
+    let sbst' = List.remove_assoc xs (List.remove_assoc x sbst) in
+    Match (subst sbst e, subst sbst e1, x, xs, subst sbst' e2)
 
 let rec string_of_exp3 = function
   | IfThenElse (e, e1, e2) ->
-      "IF " ^ string_of_exp2 e ^ " THEN " ^ string_of_exp2 e1 ^ " ELSE " ^ string_of_exp3 e2
+    "IF " ^ string_of_exp2 e ^ " THEN " ^ string_of_exp2 e1 ^ " ELSE " ^ string_of_exp3 e2
   | Lambda (x, e) ->
-      "FUN " ^ x ^ " -> " ^ string_of_exp3 e
+    "FUN " ^ x ^ " -> " ^ string_of_exp3 e
   | RecLambda (f, x, e) ->
-      "REC " ^ f ^ " " ^ x ^ " -> " ^ string_of_exp3 e
+    "REC " ^ f ^ " " ^ x ^ " -> " ^ string_of_exp3 e
   | Match (e, e1, x, xs, e2) ->
-      "MATCH " ^ string_of_exp2 e ^ " WITH | [] -> " ^ string_of_exp2 e1 ^ " | " ^ x ^ "::" ^ xs ^ " -> " ^ string_of_exp3 e2
+    "MATCH " ^ string_of_exp2 e ^ " WITH | [] -> " ^ string_of_exp2 e1 ^ " | " ^ x ^ "::" ^ xs ^ " -> " ^ string_of_exp3 e2
   | e -> string_of_exp2 e
 and string_of_exp2 = function
   | Equal (e1, e2) ->
