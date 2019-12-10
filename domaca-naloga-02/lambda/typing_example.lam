@@ -1,0 +1,1 @@
+FUN f -> FUN ab -> f (FST ab) (SND ab)
