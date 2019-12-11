@@ -290,12 +290,80 @@ begin
   }
 end
 
+lemma lookup_weaken {Γ a A x B} :
+    lookup a Γ A -> lookup a (ctx.cons Γ x B) A
+:=
+begin
+    intros,
+    apply lookup.there,
+    sorry, -- popravek
+    assumption,
+end
+
+lemma lookup_find {Γ a A x B} :
+    lookup a (ctx.cons Γ x B) A -> a ≠ x -> lookup a Γ A
+:=
+begin
+    intros,
+    cases a_1,
+    contradiction,
+    assumption,
+end
+
 
 lemma weakening {Γ e A x B} :
     of Γ e A -> of (ctx.cons Γ x B) e A
 :=
 begin
-    sorry
+    intros,
+    induction a,
+    case of.var {
+        apply of.var,
+        apply lookup.there,
+        -- potrebujemo da se x ne pojavi v e
+        sorry,
+        assumption,
+    },
+    case of.unit
+        { apply of.unit, },
+    case of.true
+        { apply of.true, },
+    case of.false
+        { apply of.false, },
+    case of.app {
+        apply of.app,
+        assumption,
+        assumption,
+    },
+    case of.nil
+        { apply of.nil, },
+    case of.lam {
+        apply of.lam,
+        cases a_a,
+        case of.var {
+            apply of.var,
+            apply lookup.there,
+            sorry, -- a_a_x ≠ a_x (popravimo)
+            apply lookup.there,
+            sorry, -- a_a_x ≠ x (popravimo)
+            apply lookup_find,
+            assumption,
+            sorry, -- a_a_x ≠ a_x (popravimo)
+        },
+        case of.unit
+            { apply of.unit, },
+        case of.true
+            { apply of.true, },
+        case of.false
+            { apply of.false, },
+        case of.app {
+            apply of.app,
+            
+        },
+        case of.nil
+        { apply of.nil, },
+        -- repeat {},
+    }
 end
 
 
