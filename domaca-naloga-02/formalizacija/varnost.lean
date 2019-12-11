@@ -342,7 +342,75 @@ begin
         cases Hof,
         apply Hof_a_2
     },
-    repeat {sorry},
+    case step.pair1 {
+        cases Hof,
+        apply of.pair,
+        apply Hstep_ih Hof_a,
+        apply Hof_a_1,
+    },
+    case step.pair2 {
+        cases Hof,
+        apply of.pair,
+        apply Hof_a,
+        apply Hstep_ih Hof_a_1,
+    },
+    case step.fst_step {
+        cases Hof,
+        apply of.fst,
+        apply Hstep_ih Hof_a,
+    },
+    case step.fst_beta {
+        cases Hof,
+        cases Hof_a,
+        apply Hof_a_a,
+    },
+    case step.snd_step {
+        cases Hof,
+        apply of.snd,
+        apply Hstep_ih Hof_a,
+    },
+    case step.snd_beta {
+        cases Hof,
+        cases Hof_a,
+        apply Hof_a_a_1,
+    },
+    case step.cons1 {
+        cases Hof,
+        apply of.cons,
+        apply Hstep_ih Hof_a,
+        apply Hof_a_1,
+    },
+    case step.cons2 {
+        cases Hof,
+        apply of.cons,
+        apply Hof_a,
+        apply Hstep_ih Hof_a_1,
+    },
+    case step.list_match_step {
+        cases Hof,
+        apply of.list_match,
+        apply Hstep_ih Hof_a,
+        apply Hof_a_1,
+        apply Hof_a_2,
+    },
+    case step.list_match_nil {
+        cases Hof,
+        apply Hof_a_1,
+    },
+    case step.list_match_cons {
+        rename Hstep_x x,
+        rename Hstep_xs xs,
+        rename Hstep_v v,
+        rename Hstep_vs vs,
+        cases Hof,
+        cases Hof_a,
+        apply substitution,
+        repeat {assumption},
+        apply substitution,
+        repeat {assumption},
+        apply weakening,
+        assumption,
+    },
 end
 
 
@@ -432,7 +500,7 @@ begin
             existsi (tm.if_then_else h_w H_e1 H_e2),
             exact (step.if_then_else h_h),
         }
-  },
+    },
     case of.pair {
         cases H_ih_a empty,
         case or.inl {
