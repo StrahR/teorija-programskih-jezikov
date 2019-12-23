@@ -3,24 +3,18 @@ inductive ty : Type
 | bool : ty
 | arrow : ty -> ty -> ty
 
-def nm := string
+def ident := string
 
 inductive tm : Type
-| var : nm -> tm
+| var : ident -> tm
 | unit : tm
 | true : tm
 | false : tm
 | app : tm -> tm -> tm
-| lam : nm -> tm -> tm
+| lam : ident -> tm -> tm
 | if_then_else : tm -> tm -> tm -> tm
 
-inductive value : tm -> Prop
-| unit : value tm.unit
-| true : value tm.true
-| false : value tm.false
-| lam {x e} : value (tm.lam x e)
-
-def subst : nm -> tm -> tm -> tm
+def subst : ident -> tm -> tm -> tm
 | x e (tm.var y) :=
     if x = y then e else tm.var y
 | x e tm.unit :=
@@ -35,6 +29,12 @@ def subst : nm -> tm -> tm -> tm
     if x = y then tm.lam y e' else tm.lam y (subst x e e')
 | x e (tm.if_then_else e' e1 e2) :=
     tm.if_then_else (subst x e e') (subst x e e1) (subst x e e2)
+
+inductive value : tm -> Prop
+| unit : value tm.unit
+| true : value tm.true
+| false : value tm.false
+| lam {x e} : value (tm.lam x e)
 
 inductive step : tm -> tm -> Prop
 | app1 {e1 e1' e2} :
@@ -57,15 +57,15 @@ inductive step : tm -> tm -> Prop
 
 inductive ctx : Type
 | nil : ctx
-| cons : nm -> ty -> ctx -> ctx
+| cons : ctx -> ident -> ty -> ctx
 
-inductive lookup : nm -> ctx -> ty -> Prop
-| here {x A Γ} :
-    lookup x (ctx.cons x A Γ) A
+inductive lookup : ident -> ctx -> ty -> Prop
+| here {Γ x A} :
+    lookup x (ctx.cons Γ x A) A
 | there {x y A B Γ} :
     x ≠ y ->
     lookup x Γ A ->
-    lookup x (ctx.cons y B Γ) A
+    lookup x (ctx.cons Γ y B) A
 
 inductive of : ctx -> tm -> ty -> Prop
 | var {x Γ A} :
@@ -82,7 +82,7 @@ inductive of : ctx -> tm -> ty -> Prop
     of Γ e2 A ->
     of Γ (tm.app e1 e2) B
 | lam {Γ x e A B} :
-    of (ctx.cons x A Γ) e B ->
+    of (ctx.cons Γ x A) e B ->
     of Γ (tm.lam x e) (ty.arrow A B)
 | if_then_else {Γ e e1 e2 A} :
     of Γ e ty.bool ->
@@ -92,12 +92,12 @@ inductive of : ctx -> tm -> ty -> Prop
 
 theorem substitution {Γ x A e e' A'} :
     of Γ e A
-    -> of (ctx.cons x A Γ) e' A'
+    -> of (ctx.cons Γ x A) e' A'
     -> of Γ (subst x e e') A'
 :=
 begin
   intros H,
-  generalize ctx_cons : (ctx.cons x A Γ) = Γ',
+  generalize ctx_cons : (ctx.cons Γ x A) = Γ',
   intros H',
   induction H',
   repeat {simp},
