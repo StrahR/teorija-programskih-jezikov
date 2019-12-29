@@ -320,8 +320,7 @@ begin
     case of.var {
         apply of.var,
         apply lookup.there,
-        -- potrebujemo da se x ne pojavi v e
-        sorry,
+        sorry, -- x je svež
         assumption,
     },
     case of.unit
@@ -339,30 +338,37 @@ begin
         { apply of.nil, },
     case of.lam {
         apply of.lam,
-        cases a_a,
-        case of.var {
-            apply of.var,
-            apply lookup.there,
-            sorry, -- a_a_x ≠ a_x (popravimo)
-            apply lookup.there,
-            sorry, -- a_a_x ≠ x (popravimo)
-            apply lookup_find,
-            assumption,
-            sorry, -- a_a_x ≠ a_x (popravimo)
-        },
-        case of.unit
-            { apply of.unit, },
-        case of.true
-            { apply of.true, },
-        case of.false
-            { apply of.false, },
-        case of.app {
-            apply of.app,
-            
-        },
-        case of.nil
-        { apply of.nil, },
-        -- repeat {},
+        sorry, -- tukaj zamenjamo vrstni red (ker je x svež)
+    },
+    case of.if_then_else {
+        apply of.if_then_else,
+        assumption,
+        assumption,
+        assumption,
+    },
+    case of.pair {
+        apply of.pair,
+        assumption,
+        assumption,
+    },
+    case of.fst {
+        apply of.fst,
+        assumption,
+    },
+    case of.snd {
+        apply of.snd,
+        assumption,
+    },
+    case of.cons {
+        apply of.cons,
+        assumption,
+        assumption,
+    },
+    case of.list_match {
+        apply of.list_match,
+        assumption,
+        assumption,
+        sorry, -- reorder
     }
 end
 
