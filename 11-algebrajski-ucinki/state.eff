@@ -1,0 +1,19 @@
+effect Get : unit -> int
+effect Set : int -> unit
+
+let state init_state = handler
+  | effect (Get ()) k -> (fun s -> (k s) s)
+  | effect (Set n) k -> (fun _ -> (k ()) n)
+  | v -> (fun _ -> v)
+  | finally prog -> prog init_state
+;;
+
+let get () = perform (Get ())
+let set n = perform (Set n)
+
+let test () =
+  set (get () + 1);
+  get ()
+;;
+
+(with state 10 handle test ());;

@@ -1,0 +1,89 @@
+let tpj () =
+  perform (Print "T");
+  perform (Print "P");
+  perform (Print "J")
+;;
+
+handle
+	tpj ()
+with
+| x -> []
+| effect (Print msg) k ->
+  let msgs = k () in
+  msg :: msgs
+;;
+
+effect Amb : unit -> bool
+
+let choose x y =
+  if perform (Amb ()) then x else y
+;;
+
+handle
+  perform (Print "H");
+	(choose 6 (-7)) * (choose (-7) 8)
+with
+| x -> [x]
+| effect (Amb ()) k -> (k true) @ (k false)
+
+;;
+
+effect Fail : unit -> empty
+
+let rec choose_int m n =
+  if m > n then absurd (perform (Fail ()))
+  else if perform (Amb ()) then m
+  else choose_int (m+1) n
+;;
+
+let int_sqrt m =
+  let rec try n =
+    let n2 = n ** 2 in
+    if n2 > m then None
+    else if n2 = m then Some n
+    else try (n + 1)
+  in
+  try 0
+;;
+
+let pythagorean m n =
+  let a = choose_int m (n - 1) in
+  let b = choose_int a n in
+  match int_sqrt (a ** 2 + b ** 2) with
+  | None -> absurd (perform (Fail ()))
+  | Some c -> (a, b, c)
+;;
+
+let backtrack = handler
+  | effect Amb k ->
+    handle continue k false with
+    | effect Fail _ -> continue k true
+;;
+
+
+let rec decide = function
+  | [] -> absurd (perform (Fail ()))
+  | x :: xs -> if (perform (Amb ())) then x else decide xs;;
+
+let no_attack (x, y) (x', y') =
+  x <> x' && y <> y' && abs (x - x') <> abs (y - y');;
+
+let available x qs =
+  filter (fun y -> forall (no_attack (x, y)) qs) [1; 2; 3; 4; 5; 6; 7; 8];;
+
+let rec place x qs =
+  if x = 9 then qs else
+  let y = decide (available x qs) in
+  place (x + 1) ((x, y) :: qs);;
+
+let choose_all = handler
+  | x -> [x]
+  | effect Fail _ -> []
+  | effect Amb k -> (continue k true) @ (continue k false)
+;;
+
+with choose_all handle
+  place 1 []
+;;
+
+

@@ -1,0 +1,66 @@
+let mute = handler
+  | effect (Print _) k -> continue k ()
+  | v -> v
+;;
+
+let print s = perform (Print s);;
+
+let test_fun () =
+  print "A bit here!";
+  print "A bit there.";
+  print "We are done...";
+  28573
+;;
+(* 
+with mute handle
+  test_fun ()
+;; *)
+
+let rec string_make n c =
+  if n <= 0 then "" else c ^ string_make (n-1) c;;
+
+
+let shift_text_right n = handler
+  | effect (Print msg) k ->
+    print (string_make n " " ^ msg);
+    continue k ()
+  | v -> v
+;;
+(* 
+print "Hello";;
+with shift_text_right 4 handle
+  print "World"
+;; *)
+
+
+let underline = handler
+  | effect (Print msg) k -> 
+    print (msg);
+    print (string_make (string_length msg - 1) "-");
+    continue k ()
+;;
+
+(* 
+with underline handle
+  test_fun ()
+;; *)
+
+
+effect Error : string -> empty
+
+let to_option = handler
+  | effect (Error msg) k ->
+    print ("Something went wrong " ^ msg);
+    None
+  | v -> Some v;;
+
+let fail msg = absurd (perform (Error msg))
+
+let test b =
+  if b
+  then fail "Nope"
+  else 28573;;
+with to_option handle
+  test true
+;;
+
